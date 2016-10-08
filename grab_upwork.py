@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-from time import sleep
+
+from selenium.common.exceptions import NoSuchElementException
 
 import functions
-import pswd
 import grab_upwork_cfg
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium import webdriver
+import pswd
 
 VERSION = '1.0.0'
 __author__ = 'Aleksandr Jashhuk, Zoer, R5AM, www.r5am.ru'
@@ -28,23 +26,74 @@ def main():
 
     # Доступен ли сервер
     result = functions.site_available(driver, 'Upwork')
-    print result
     if not result:
         print 'Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.'
         driver.close()
         exit(1)
 
     # Логинимся
-    driver.find_element_by_xpath('//a[@href="/login"]').click()
-    username_field = driver.find_element_by_xpath('//input[@id="login_username"]')
-    username_field.send_keys(pswd.user_name)
-    password_field = driver.find_element_by_xpath('//input[@id="login_password"]')
-    password_field.send_keys(pswd.user_password)
-    driver.find_element_by_xpath('//button[@type="submit" and contains(text(),"Log In")]').click()
+    print 'Login...'
+    if upwork_logging(driver):
+        print 'Successful login.'
+    else:
+        print 'Unsuccessful login'
+        driver.close()
+        exit(1)
 
     functions.input_symbol()
 
-    driver.close()          # Закрыть браузер
+    # Разлогиниться
+    print 'Logout...'
+    if upwork_logout(driver):
+        print 'Successful logout.'
+    else:
+        print 'Unsuccessful logout'
+        driver.close()
+        exit(1)
+
+    functions.input_symbol()
+
+    driver.close()  # Закрыть браузер
+
+
+def upwork_logging(driver):
+    # Идём логиниться
+    driver.find_element_by_xpath('//a[@href="/login"]').click()
+
+    # Поле для имени пользователя
+    username_field = driver.find_element_by_xpath('//input[@id="login_username"]')
+    username_field.send_keys(pswd.user_name)
+
+    # Поле для пароля
+    password_field = driver.find_element_by_xpath('//input[@id="login_password"]')
+    password_field.send_keys(pswd.user_password)
+
+    # Кнопка "Log In"
+    driver.find_element_by_xpath('//button[@type="submit" and contains(text(),"Log In")]').click()
+
+    # Проверка удачного логирования
+    login_result = True
+    try:
+        driver.find_element_by_xpath('//a[@title="Alex Jashhuk"]/span[text()="Alex Jashhuk"]')
+    except NoSuchElementException:
+        login_result = False
+
+    return login_result
+
+
+def upwork_logout(driver):
+    driver.find_element_by_xpath('//a[@class="dropdown-toggle" and @title="Alex Jashhuk"]').click()
+    driver.find_element_by_xpath('//a[@data-ng-click="logout()"]').click()
+
+    # Проверка удачного разлогирования
+    logout_result = True
+    try:
+        driver.find_element_by_xpath('//h1[text()="Log in and get to work"]')
+    except NoSuchElementException:
+        logout_result = False
+
+    return logout_result
+
 
 if __name__ == '__main__':
     main()
