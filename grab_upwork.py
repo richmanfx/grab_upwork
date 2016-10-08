@@ -29,6 +29,7 @@ def main():
     if not result:
         print 'Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.'
         driver.close()
+        print 'Quit at ' + functions.current_time()
         exit(1)
 
     # Логинимся
@@ -38,6 +39,7 @@ def main():
     else:
         print 'Unsuccessful login'
         driver.close()
+        print 'Quit at ' + functions.current_time()
         exit(1)
 
     functions.input_symbol()
@@ -49,11 +51,13 @@ def main():
     else:
         print 'Unsuccessful logout'
         driver.close()
+        print 'Quit at ' + functions.current_time()
         exit(1)
 
     functions.input_symbol()
 
     driver.close()  # Закрыть браузер
+    print 'Quit at ' + functions.current_time()
 
 
 def upwork_logging(driver):
@@ -82,11 +86,17 @@ def upwork_logging(driver):
 
 
 def upwork_logout(driver):
-    driver.find_element_by_xpath('//a[@class="dropdown-toggle" and @title="Alex Jashhuk"]').click()
-    driver.find_element_by_xpath('//a[@data-ng-click="logout()"]').click()
+
+    logout_result = True
+
+    try:
+        driver.find_element_by_xpath('//a[@class="dropdown-toggle" and @title="Alex Jashhuk"]').click()
+        driver.find_element_by_xpath('//a[@data-ng-click="logout()"]').click()
+    except NoSuchElementException:
+        print 'Not logged in!'
+        logout_result = False
 
     # Проверка удачного разлогирования
-    logout_result = True
     try:
         driver.find_element_by_xpath('//h1[text()="Log in and get to work"]')
     except NoSuchElementException:
