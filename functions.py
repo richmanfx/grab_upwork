@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import system, path
 from sys import platform
-from configparser import ConfigParser
-import xml.etree.cElementTree as ElTr
 from pytz import timezone
 from datetime import datetime
 from selenium import webdriver
@@ -20,43 +18,41 @@ def clear_console():
 
 
 # Возвращает WebDriver соответствующий браузеру, указанному в INI-файле
-def get_webdriver(ini_config, ini_config_name):
-    """ Returns WebDriver the appropriate browser that you specified in the INI-file. """
+def get_webdriver(config_file):
+    """ Returns WebDriver the appropriate browser that you specified in the config-file. """
     driver = webdriver
 
-    if ini_config['browser']['browser_name'] == 'phantomjs':
+    if config_file.browser.lower() == 'phantomjs':
         driver = webdriver.PhantomJS(executable_path='webdrivers' + path.sep + 'phantomjs')
-    elif ini_config['browser']['browser_name'] == 'chrome':
+    elif config_file.browser.lower() == 'chrome':
         driver = webdriver.Chrome(executable_path='webdrivers' + path.sep + 'chromedriver.exe')
-    elif ini_config['browser']['browser_name'] == 'firefox':
-        binary = FirefoxBinary('C:' + path.sep + 'Program Files (x86)' + path.sep + 'Mozilla Firefox' +
+    elif config_file.browser.lower() == 'firefox':      # FF v47.0.1, not older
+        binary = FirefoxBinary('C:' + path.sep + 'Program Files' + path.sep + 'Mozilla Firefox' +
                                path.sep + 'firefox.exe')
         driver = webdriver.Firefox(firefox_binary=binary)
     else:
-        print('In config file ' + ini_config_name + ' not specified the browser.')
+        print('In config file ' + config_file + ' the browser not specified.')
         exit(1)
-    print("Use '" + ini_config['browser']['browser_name'] + "'")
+    print("Use '" + config_file.browser.capitalize() + "' browser.")
 
-    driver2 = set_browser_size(driver, ini_config)  # Размеры окна браузера
+    driver2 = set_browser_size(driver, config_file)  # Размеры окна браузера
 
     return driver2
 
 
 # Установка размера окна браузера
-def set_browser_size(driver, ini_config):
+def set_browser_size(driver, config_file):
     """ Sets the size of the browser window. """
     try:
-        width = ini_config['browser']['browser_size'].split()[0]
-        height = ini_config['browser']['browser_size'].split()[1]
+        width = config_file.browser_size[0]
+        height = config_file.browser_size[1]
     except KeyError:
-        print('The size of the browser window is not specified in the INI-file, will be maximum size.')
+        print('The size of the browser window is not specified in the config-file, will be maximum size.')
         driver.maximize_window()
     else:
         driver.set_window_size(width, height)
 
     return driver
-
-
 
 
 # Проверяет доступность сайта и, если недоступен, выходит из программы.
@@ -115,4 +111,3 @@ def console_input():
 def current_time():
     """ Return a formatted current date and time with time zone. """
     return timezone('Europe/Moscow').fromutc(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S %Z")
-
