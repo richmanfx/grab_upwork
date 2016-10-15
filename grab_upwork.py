@@ -14,12 +14,18 @@ def main():
     functions.clear_console()  # Очистить консоль
     print 'Start at ' + functions.current_time()
 
+    functions.console_input()
+
     # Получить ВЕБ-драйвер
     driver = functions.get_webdriver(grab_upwork_cfg)
+
+    functions.console_input()
 
     # Открыть главную страницу сайта
     full_server_name = 'http://' + grab_upwork_cfg.site_name
     driver.get(full_server_name)
+
+    functions.console_input()
 
     # Пока не найдём элемент или N секунд (N сек - для всех, до отмены, глобально)
     driver.implicitly_wait(grab_upwork_cfg.implicitly_wait_timeout)
@@ -42,7 +48,7 @@ def main():
         print 'Quit at ' + functions.current_time()
         exit(1)
 
-    functions.input_symbol()
+    functions.console_input()
 
     # Разлогиниться
     print 'Logout...'
@@ -54,7 +60,7 @@ def main():
         print 'Quit at ' + functions.current_time()
         exit(1)
 
-    functions.input_symbol()
+    functions.console_input()
 
     driver.close()  # Закрыть браузер
     print 'Quit at ' + functions.current_time()

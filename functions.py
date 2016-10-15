@@ -84,14 +84,15 @@ def input_symbol():
     status = ''
     input_string = ''
 
-    while input_string != 'q' and input_string != 'Q' and input_string != 'n' and input_string != 'N':
+    while input_string not in ['Q', 'N', 'Й', 'Т']:
 
-        input_string = raw_input()
+        # Просто upper() не работает с русскими буквами
+        input_string = raw_input().replace('й', 'Й').replace('т', 'Т').upper()
 
-        if input_string == 'q' or input_string == 'Q':
+        if input_string in ['Q', 'Й']:
             status = 'exit'
             print(u'Quit.')
-        elif input_string == 'n' or input_string == 'N':
+        elif input_string in ['N', 'Т']:
             print(u'Continue.')
             status = 'next'
         else:
