@@ -18,7 +18,7 @@ def clear_console():
 
 
 # Возвращает WebDriver соответствующий браузеру, указанному в INI-файле
-def get_webdriver(config_file):
+def get_webdriver(config_file, logger):
     """ Returns WebDriver the appropriate browser that you specified in the config-file. """
     driver = webdriver
 
@@ -31,23 +31,23 @@ def get_webdriver(config_file):
                                path.sep + 'firefox.exe')
         driver = webdriver.Firefox(firefox_binary=binary)
     else:
-        print('In config file ' + config_file + ' the browser not specified.')
+        logger.error('In config file ' + config_file + ' the browser not specified.')
         exit(1)
-    print("Use '" + config_file.browser.capitalize() + "' browser.")
+    logger.info("Use '" + config_file.browser.capitalize() + "' browser.")
 
-    driver2 = set_browser_size(driver, config_file)  # Размеры окна браузера
+    driver2 = set_browser_size(driver, config_file, logger)  # Размеры окна браузера
 
     return driver2
 
 
 # Установка размера окна браузера
-def set_browser_size(driver, config_file):
+def set_browser_size(driver, config_file, logger):
     """ Sets the size of the browser window. """
     try:
         width = config_file.browser_size[0]
         height = config_file.browser_size[1]
     except KeyError:
-        print('The size of the browser window is not specified in the config-file, will be maximum size.')
+        logger.info('The size of the browser window is not specified in the config-file, will be maximum size.')
         driver.maximize_window()
     else:
         driver.set_window_size(width, height)
@@ -73,7 +73,7 @@ def site_available(driver, part_string):
 # Обработка символа в консоли
 # Считывает символ с консоли, при 'q', 'Q' - выход из приложения,
 #  при 'n', 'N' - ничего не делаем и идём дальше, при других символах - снова считываем
-def input_symbol():
+def input_symbol(logger):
     """
     Processing symbol in the console:
                                      'q', 'Q' - quit application;
@@ -91,19 +91,19 @@ def input_symbol():
 
         if input_string in ['Q', 'Й']:
             status = 'exit'
-            print(u'Quit.')
+            logger.info(u'Quit.')
         elif input_string in ['N', 'Т']:
-            print(u'Continue.')
+            logger.info(u'Continue.')
             status = 'next'
         else:
-            print('Bad input: ' + input_string)
+            logger.info('Bad input: ' + input_string)
 
     return status
 
 
-def console_input():
+def console_input(logger):
     """ Check the result of the character input and, if necessary, exit the application. """
-    if input_symbol() == 'exit':
+    if input_symbol(logger) == 'exit':
         print('Bye-bye!')
         exit(2)
 

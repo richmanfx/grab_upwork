@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+""" Грабинг с Upwork.com заявок по ключевым словам. """
+from sys import argv
 
 from selenium.common.exceptions import NoSuchElementException
+import logging
 
 import functions
 import grab_upwork_cfg
@@ -10,22 +13,52 @@ VERSION = '1.0.0'
 __author__ = 'Aleksandr Jashhuk, Zoer, R5AM, www.r5am.ru'
 
 
-def main():
-    functions.clear_console()  # Очистить консоль
-    print 'Start at ' + functions.current_time()
+def order_find(find_string):
+    """ Поиск заявок по строке с ключевыми словами """
+    print find_string
 
-    functions.console_input()
+
+def main():
+    """ Main function """
+
+    # Логирование
+    message_level = logging.INFO       # CRITICAL, ERROR, WARNING, INFO, DEBUG
+    logger = logging.getLogger()
+    logger.setLevel(message_level)
+    formatter = logging.Formatter('%(asctime)s| %(levelname)s| %(message)s')
+    # логирование в файл
+    file_handler = logging.FileHandler('grab_upwork.log')
+    file_handler.setLevel(message_level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    # логирование в консоль
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(message_level)
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+
+
+
+    functions.clear_console()  # Очистить консоль
+    logger.info('Start at ' + functions.current_time())
+
+    # Поиск заказа по фразе
+    if len(argv) != 2:
+        logger.error('One parameter is required - the search string.')
+        input()
+        exit(1)
+    else:
+        order_find(argv[1])
+
+    # functions.console_input(logger)
 
     # Получить ВЕБ-драйвер
-    driver = functions.get_webdriver(grab_upwork_cfg)
-
-    functions.console_input()
+    driver = functions.get_webdriver(grab_upwork_cfg, logger)
 
     # Открыть главную страницу сайта
     full_server_name = 'http://' + grab_upwork_cfg.site_name
     driver.get(full_server_name)
-
-    functions.console_input()
 
     # Пока не найдём элемент или N секунд (N сек - для всех, до отмены, глобально)
     driver.implicitly_wait(grab_upwork_cfg.implicitly_wait_timeout)
@@ -35,38 +68,42 @@ def main():
     if not result:
         print 'Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.'
         driver.close()
-        print 'Quit at ' + functions.current_time()
+        logger.info('Quit at ' + functions.current_time())
         exit(1)
 
     # Логинимся
-    print 'Login...'
+    logger.info('Login...')
     if upwork_logging(driver):
-        print 'Successful login.'
+        logger.info('Successful login.')
     else:
-        print 'Unsuccessful login'
+        logger.error('Unsuccessful login.')
         driver.close()
-        print 'Quit at ' + functions.current_time()
+        logger.info('Quit at ' + functions.current_time())
         exit(1)
 
-    functions.console_input()
+    # Поиск заказа по фразе
+    # order_find()
+
+    functions.console_input(logger)
 
     # Разлогиниться
-    print 'Logout...'
-    if upwork_logout(driver):
-        print 'Successful logout.'
+    logger.info('Logout...')
+    if upwork_logout(driver, logger):
+        logger.info('Successful logout.')
     else:
-        print 'Unsuccessful logout'
+        logger.error('Unsuccessful logout')
         driver.close()
-        print 'Quit at ' + functions.current_time()
+        logger.error('Quit at ' + functions.current_time())
         exit(1)
 
-    functions.console_input()
+    # functions.console_input(logger)
 
     driver.close()  # Закрыть браузер
-    print 'Quit at ' + functions.current_time()
+    logger.info('Quit at ' + functions.current_time())
 
 
 def upwork_logging(driver):
+    """ Авторизация """
     # Идём логиниться
     driver.find_element_by_xpath('//a[@href="/login"]').click()
 
@@ -79,27 +116,35 @@ def upwork_logging(driver):
     password_field.send_keys(pswd.user_password)
 
     # Кнопка "Log In"
-    driver.find_element_by_xpath('//button[@type="submit" and contains(text(),"Log In")]').click()
+    driver.find_element_by_xpath(
+        '//button[@type="submit" and contains(text(),"Log In")]'
+    ).click()
 
     # Проверка удачного логирования
     login_result = True
     try:
-        driver.find_element_by_xpath('//a[@title="Alex Jashhuk"]/span[text()="Alex Jashhuk"]')
+        driver.find_element_by_xpath(
+            '//a[@title="Alex Jashhuk"]/span[text()="Alex Jashhuk"]'
+        )
     except NoSuchElementException:
         login_result = False
 
     return login_result
 
 
-def upwork_logout(driver):
-
+def upwork_logout(driver, logger):
+    """ Логаут - разлогирование """
     logout_result = True
 
     try:
-        driver.find_element_by_xpath('//a[@class="dropdown-toggle" and @title="Alex Jashhuk"]').click()
-        driver.find_element_by_xpath('//a[@data-ng-click="logout()"]').click()
+        driver.find_element_by_xpath(
+            '//a[@class="dropdown-toggle" and @title="Alex Jashhuk"]'
+        ).click()
+        driver.find_element_by_xpath(
+            '//a[@data-ng-click="logout()"]'
+        ).click()
     except NoSuchElementException:
-        print 'Not logged in!'
+        logger.error('Not logged in!')
         logout_result = False
 
     # Проверка удачного разлогирования
