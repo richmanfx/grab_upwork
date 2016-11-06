@@ -4,6 +4,7 @@ from sys import argv
 
 from selenium.common.exceptions import NoSuchElementException
 import logging
+from os import path
 
 import functions
 import grab_upwork_cfg
@@ -25,9 +26,12 @@ def main():
     message_level = logging.INFO       # CRITICAL, ERROR, WARNING, INFO, DEBUG
     logger = logging.getLogger()
     logger.setLevel(message_level)
-    formatter = logging.Formatter('%(asctime)s| %(levelname)s| %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', datefmt='%Y‌​-%m-%d_%H-%M-%S')
     # логирование в файл
-    file_handler = logging.FileHandler('grab_upwork.log')
+    log_path = 'logs'
+    date_time_log_file = functions.current_time().replace(' ', '_').replace(':', '-')
+    log_file_name = date_time_log_file + '.log'
+    file_handler = logging.FileHandler(log_path + path.sep + log_file_name)
     file_handler.setLevel(message_level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
