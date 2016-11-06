@@ -11,6 +11,11 @@ browser = 'firefox'
 browser_size = (1900, 850)
 
 # Имя сайта
-site_name = "www.upwork.com"
+site_name = 'www.upwork.com'
 
 implicitly_wait_timeout = 10
+
+# Уровень логирования
+logging_level = 'INFO'      # CRITICAL, ERROR, WARNING, INFO, DEBUG
+logging_in_file = 'True'
+logging_in_console = 'True'

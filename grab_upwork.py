@@ -24,7 +24,16 @@ def main():
     """ Main function """
 
     # Логирование
-    message_level = logging.INFO       # CRITICAL, ERROR, WARNING, INFO, DEBUG
+    message_level = logging.CRITICAL    # Уровень логирования по умолчанию
+    if grab_upwork_cfg.logging_level == 'DEBUG':
+        message_level = logging.DEBUG
+    elif grab_upwork_cfg.logging_level == 'INFO':
+        message_level = logging.INFO
+    elif grab_upwork_cfg.logging_level == 'WARNING':
+        message_level = logging.WARNING
+    elif grab_upwork_cfg.logging_level == 'ERROR':
+        message_level = logging.ERROR
+
     logger = logging.getLogger()
     logger.setLevel(message_level)
     formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', datefmt='%Y‌​-%m-%d_%H-%M-%S')
@@ -47,8 +56,7 @@ def main():
     stream_handler.setLevel(message_level)
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
-
-
+    logger.info('Logging level is ' + grab_upwork_cfg.logging_level)
 
     functions.clear_console()  # Очистить консоль
     logger.info('Start at ' + functions.current_time())
@@ -114,6 +122,14 @@ def main():
 
 def upwork_logging(driver):
     """ Авторизация """
+
+    # Удаляем куки
+    # driver.delete_all_cookies()
+
+    # Выводим все куки доступные для текущего URL
+    # for cookie in driver.get_cookies():
+    #     print "%s -> %s" % (cookie['name'], cookie['value'])
+
     # Идём логиниться
     driver.find_element_by_xpath('//a[@href="/login"]').click()
 
