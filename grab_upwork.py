@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 import logging
 from os import path
 
+
 import functions
 import grab_upwork_cfg
 import pswd
@@ -16,7 +17,7 @@ __author__ = 'Aleksandr Jashhuk, Zoer, R5AM, www.r5am.ru'
 
 def order_find(find_string):
     """ Поиск заявок по строке с ключевыми словами """
-    print find_string
+    logging.info('Find string in jobs: ' + find_string.replace('\n', ''))
 
 
 def main():
@@ -27,20 +28,25 @@ def main():
     logger = logging.getLogger()
     logger.setLevel(message_level)
     formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', datefmt='%Y‌​-%m-%d_%H-%M-%S')
+
     # логирование в файл
     log_path = 'logs'
+    if not path.exists(log_path):
+        print 'ERROR: Path "' + log_path + '" not found.'
+        exit(1)
+
     date_time_log_file = functions.current_time().replace(' ', '_').replace(':', '-')
     log_file_name = date_time_log_file + '.log'
     file_handler = logging.FileHandler(log_path + path.sep + log_file_name)
     file_handler.setLevel(message_level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
     # логирование в консоль
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(message_level)
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
-
 
 
 
@@ -70,7 +76,7 @@ def main():
     # Доступен ли сервер
     result = functions.site_available(driver, 'Upwork')
     if not result:
-        print 'Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.'
+        logger.info('Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.')
         driver.close()
         logger.info('Quit at ' + functions.current_time())
         exit(1)
