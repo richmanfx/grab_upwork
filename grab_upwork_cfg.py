@@ -3,8 +3,8 @@
 
 # Поддерживаемые браузеры - раскомментировать один!
 # browser = 'phantomjs'
-# browser = 'chrome'
-browser = 'firefox'
+browser = 'chrome'
+# browser = 'firefox'
 
 # Размер окна браузера, например, (1024, 768)
 # Если закомментировать, то будет максимальный размер окна
@@ -17,5 +17,5 @@ implicitly_wait_timeout = 10
 
 # Уровень логирования
 logging_level = 'INFO'      # CRITICAL, ERROR, WARNING, INFO, DEBUG
-logging_in_file = 'True'
+logging_in_file = 'False'
 logging_in_console = 'True'

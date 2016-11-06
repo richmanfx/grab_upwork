@@ -15,9 +15,10 @@ VERSION = '1.0.0'
 __author__ = 'Aleksandr Jashhuk, Zoer, R5AM, www.r5am.ru'
 
 
-def order_find(find_string):
+def order_find(find_string, log_flag):
     """ Поиск заявок по строке с ключевыми словами """
-    logging.info('Find string in jobs: ' + find_string.replace('\n', ''))
+    if log_flag:
+        logging.info('Find string in jobs: ' + find_string.replace('\n', ''))
 
 
 def main():
@@ -34,45 +35,55 @@ def main():
     elif grab_upwork_cfg.logging_level == 'ERROR':
         message_level = logging.ERROR
 
+    log_flag = True
+    if grab_upwork_cfg.logging_in_file.upper() and grab_upwork_cfg.logging_in_console.upper() == 'FALSE':
+        log_flag = False
+        print 'Logging is OFF.'
+
     logger = logging.getLogger()
     logger.setLevel(message_level)
     formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', datefmt='%Y‌​-%m-%d_%H-%M-%S')
 
     # логирование в файл
-    log_path = 'logs'
-    if not path.exists(log_path):
-        print 'ERROR: Path "' + log_path + '" not found.'
-        exit(1)
+    if grab_upwork_cfg.logging_in_file.upper() == 'TRUE':
+        log_path = 'logs'
+        if not path.exists(log_path):
+            print 'ERROR: Path "' + log_path + '" not found.'
+            exit(1)
 
-    date_time_log_file = functions.current_time().replace(' ', '_').replace(':', '-')
-    log_file_name = date_time_log_file + '.log'
-    file_handler = logging.FileHandler(log_path + path.sep + log_file_name)
-    file_handler.setLevel(message_level)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+        date_time_log_file = functions.current_time().replace(' ', '_').replace(':', '-')
+        log_file_name = date_time_log_file + '.log'
+        file_handler = logging.FileHandler(log_path + path.sep + log_file_name)
+        file_handler.setLevel(message_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     # логирование в консоль
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(message_level)
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-    logger.info('Logging level is ' + grab_upwork_cfg.logging_level)
+    if grab_upwork_cfg.logging_in_console.upper() == 'TRUE':
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(message_level)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+        if log_flag:
+            logger.info('Logging level is ' + grab_upwork_cfg.logging_level)
 
-    functions.clear_console()  # Очистить консоль
-    logger.info('Start at ' + functions.current_time())
+        functions.clear_console()  # Очистить консоль
+    if log_flag:
+        logger.info('Start at ' + functions.current_time())
 
     # Поиск заказа по фразе
     if len(argv) != 2:
-        logger.error('One parameter is required - the search string.')
+        if log_flag:
+            logger.error('One parameter is required - the search string.')
         input()
         exit(1)
     else:
-        order_find(argv[1])
+        order_find(argv[1], log_flag)
 
-    # functions.console_input(logger)
+    # functions.console_input(logger, log_flag)
 
     # Получить ВЕБ-драйвер
-    driver = functions.get_webdriver(grab_upwork_cfg, logger)
+    driver = functions.get_webdriver(grab_upwork_cfg, logger, log_flag)
 
     # Открыть главную страницу сайта
     full_server_name = 'http://' + grab_upwork_cfg.site_name
@@ -84,40 +95,51 @@ def main():
     # Доступен ли сервер
     result = functions.site_available(driver, 'Upwork')
     if not result:
-        logger.info('Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.')
+        if log_flag:
+            logger.info('Website ' + grab_upwork_cfg.site_name + ' or page is unavailable.')
         driver.close()
-        logger.info('Quit at ' + functions.current_time())
+        if log_flag:
+            logger.info('Quit at ' + functions.current_time())
         exit(1)
 
     # Логинимся
-    logger.info('Login...')
+    if log_flag:
+        logger.info('Login...')
     if upwork_logging(driver):
-        logger.info('Successful login.')
+        if log_flag:
+            logger.info('Successful login.')
     else:
-        logger.error('Unsuccessful login.')
+        if log_flag:
+            logger.error('Unsuccessful login.')
         driver.close()
-        logger.info('Quit at ' + functions.current_time())
+        if log_flag:
+            logger.info('Quit at ' + functions.current_time())
         exit(1)
 
     # Поиск заказа по фразе
     # order_find()
 
-    functions.console_input(logger)
+    functions.console_input(logger, log_flag)
 
     # Разлогиниться
-    logger.info('Logout...')
+    if log_flag:
+        logger.info('Logout...')
     if upwork_logout(driver, logger):
-        logger.info('Successful logout.')
+        if log_flag:
+            logger.info('Successful logout.')
     else:
-        logger.error('Unsuccessful logout')
+        if log_flag:
+            logger.error('Unsuccessful logout')
         driver.close()
-        logger.error('Quit at ' + functions.current_time())
+        if log_flag:
+            logger.error('Quit at ' + functions.current_time())
         exit(1)
 
-    # functions.console_input(logger)
+    # functions.console_input(logger, log_flag)
 
     driver.close()  # Закрыть браузер
-    logger.info('Quit at ' + functions.current_time())
+    if log_flag:
+        logger.info('Quit at ' + functions.current_time())
 
 
 def upwork_logging(driver):
